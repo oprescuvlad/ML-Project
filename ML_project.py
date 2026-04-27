@@ -1,18 +1,3 @@
-"""
-TEMPLATE PROIECT ML END-TO-END
-==============================
-
-Acest template oferă o structură gol pe care poți să o completezi cu propriul proiect.
-Urmărește pașii și completează TODOs marcate.
-
-Instruțiuni:
-1. Înlocuiește [TODO: ...] cu cod real
-2. Adaugă comentarii și explicații la fiecare pas
-3. Salvează vizualizări cu plt.savefig()
-4. Testează codul pas cu pas
-5. Documentează rezultatele
-"""
-
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -32,7 +17,7 @@ import warnings
 warnings.filterwarnings('ignore')
 
 # ============================================================================
-# CONFIGURARE GENERALĂ
+# General configuration
 # ============================================================================
 
 RANDOM_STATE = 42
@@ -47,10 +32,10 @@ print("TEMPLATE PROIECT ML END-TO-END")
 print("=" * 80)
 
 # ============================================================================
-# PART 1: ÎNCARCĂ DATE
+# PART 1: upload the data
 # ============================================================================
 
-print("\n[STEP 1] Încarcă Date")
+print("\n[STEP 1] Upload the data")
 
 df = pd.read_csv('HR_Employee_Attrition.csv') # load the dataset from CSV file into a pandas DataFrame
 
@@ -175,7 +160,6 @@ print(f"\n[STEP 4] Model Training")
 
 # Model 1: Logistic Regression
 print("\n--- Model 1: Logistic Regression ---")
-# ATENTIE: Potrivit pentru clasificare binară, interpretabil
 model1 = LogisticRegression(max_iter=1000, random_state=RANDOM_STATE)
 model1.fit(X_train_processed, y_train)
 pred1 = model1.predict(X_test_processed)
@@ -185,7 +169,6 @@ print(f"Accuracy: {score1:.4f}")
 
 # Model 2: Random Forest
 print("\n--- Model 2: Random Forest ---")
-# INTUITIE: Ensemble model, handle non-linear relationships bine
 model2 = RandomForestClassifier(n_estimators=100, random_state=RANDOM_STATE, n_jobs=-1)
 model2.fit(X_train_processed, y_train)
 pred2 = model2.predict(X_test_processed)
@@ -234,20 +217,16 @@ best_score = accuracy_score(y_test, best_pred)
 print(f"Test score: {best_score:.4f}")
 
 # ============================================================================
-# PART 6: EVALUARE FINALĂ
-# ============================================================================
-
-# ============================================================================
 # PART 6: FINAL EVALUATION
 # ============================================================================
 
 print(f"\n[STEP 6] Final Evaluation")
 
 # Calculate the four core classification metrics on the test set
-accuracy = accuracy_score(y_test, best_pred)                                        # overall percentage of correct predictions
+accuracy = accuracy_score(y_test, best_pred) # overall percentage of correct predictions
 precision = precision_score(y_test, best_pred, average='weighted', zero_division=0) # how many predicted 'Yes' were actually 'Yes'
-recall = recall_score(y_test, best_pred, average='weighted', zero_division=0)       # how many actual 'Yes' cases did we catch
-f1 = f1_score(y_test, best_pred, average='weighted', zero_division=0)               # harmonic mean of precision and recall
+recall = recall_score(y_test, best_pred, average='weighted', zero_division=0)# how many actual 'Yes' cases did we catch
+f1 = f1_score(y_test, best_pred, average='weighted', zero_division=0) # harmonic mean of precision and recall
 
 # Print metrics in a clean formatted table
 print(f"\n{'Metric':<20} {'Value':<15}")
@@ -272,10 +251,6 @@ plt.tight_layout()
 plt.savefig(f'{OUTPUT_DIR}04_confusion_matrix.png', dpi=300, bbox_inches='tight')  # save as high-res image
 print("✓ Saved: 04_confusion_matrix.png")
 plt.close() # release memory
-
-# ============================================================================
-# PART 7: FEATURE IMPORTANCE
-# ============================================================================
 
 # ============================================================================
 # PART 7: FEATURE IMPORTANCE
