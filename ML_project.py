@@ -17,7 +17,7 @@ import warnings
 warnings.filterwarnings('ignore')
 
 # ============================================================================
-# General configuration
+# CONFIGURARE GENERALĂ
 # ============================================================================
 
 RANDOM_STATE = 42
@@ -32,10 +32,10 @@ print("TEMPLATE PROIECT ML END-TO-END")
 print("=" * 80)
 
 # ============================================================================
-# PART 1: upload the data
+# PART 1: Upload DATA
 # ============================================================================
 
-print("\n[STEP 1] Upload the data")
+print("\n[STEP 1] Upload DATA")
 
 df = pd.read_csv('HR_Employee_Attrition.csv') # load the dataset from CSV file into a pandas DataFrame
 
@@ -82,6 +82,18 @@ axes[1, 0].set_title('Attrition by OverTime Status')
 sns.countplot(data=df, x='JobSatisfaction', hue='Attrition', ax=axes[1, 1]) #plot 4: Job satisfaction levels by attrition status
 axes[1, 1].set_title('JobSatisfaction vs Attrition')
 
+# Add a global legend/explanation below all 4 plots
+fig.text(
+    0.5, -0.02, # centered, just below the plots
+    "📊 Chart Guide:  "
+    "[Top Left] Age histogram — shows workforce age distribution.  "
+    "[Top Right] Boxplot — compares salary range for employees who left vs stayed.  "
+    "[Bottom Left] Countplot — shows how overtime impacts attrition rate.  "
+    "[Bottom Right] Countplot — shows attrition rate per job satisfaction level (1=Low, 4=High).",
+    ha='center', fontsize=9, color='#444444',
+    bbox=dict(boxstyle='round,pad=0.5', facecolor='#f9f9f9', edgecolor='#cccccc')  # light grey box
+)
+
 plt.tight_layout()# automatically adjust subplot spacing so nothing overlaps
 plt.savefig(f'{OUTPUT_DIR}01_eda_overview.png', dpi=300, bbox_inches='tight')  # save the figure in high resolution (300 dpi) with no clipping
 print("✓ Saved: 01_eda_overview.png") # confirm the file was saved successfully
@@ -89,14 +101,33 @@ plt.close() # free memory by closing the figure
 
 # Correlation matrix — only on numerical columns to avoid encoding issues
 # Helps identify which features move together (multicollinearity)
-fig, ax = plt.subplots(figsize=(10, 8)) # create a larger single figure — heatmap needs more space to be readable
-corr_matrix = X.select_dtypes(include='number').corr() # compute correlation only on numeric columns — categorical ones would cause errors
-sns.heatmap(corr_matrix, annot=True, fmt='.2f', cmap='coolwarm', center=0, ax=ax)  # draw heatmap: show values (annot), 2 decimals (fmt), red-blue color scale centered at 0
-ax.set_title('Feature Correlation Matrix', fontsize=14, fontweight='bold')# add a clear title so the chart is self-explanatory in the portfolio
-plt.tight_layout() # adjust layout before saving
-plt.savefig(f'{OUTPUT_DIR}02_correlation_matrix.png', dpi=300, bbox_inches='tight')  # save correlation matrix as separate high-res image
-print("✓ Saved: 02_correlation_matrix.png")# confirm save
-plt.close() #free memory by closing the figure
+# Compute correlation only on top 5 features
+top_5_features = ['MonthlyIncome', 'Age', 'TotalWorkingYears', 'JobSatisfaction', 'DistanceFromHome']
+corr_matrix = X[top_5_features].corr()
+
+fig, ax = plt.subplots(figsize=(9, 7))
+sns.heatmap(corr_matrix, annot=True, fmt='.2f', cmap='coolwarm', center=0, ax=ax,
+            vmin=-0.3, vmax=0.3) # fix color scale from -1 to 1
+ax.set_title('Feature Correlation Matrix - Top 5 Features', fontsize=14, fontweight='bold')
+plt.xticks(rotation=45, ha='right')
+
+# Add explanation text below the heatmap
+fig.text(
+    0.5, -0.05, # position: centered, below the plot
+    "How to read this chart:\n"
+    "Each cell shows the correlation between two features (-1 to +1).\n"
+    "🔴 Red = strong positive correlation (both increase together)  "
+    "⬜ White = no correlation  "
+    "🔵 Blue = strong negative correlation (one increases, other decreases).\n"
+    "Values close to 0 mean the features are mostly independent of each other.",
+    ha='center', fontsize=9, color='#444444',
+    bbox=dict(boxstyle='round,pad=0.5', facecolor='#f9f9f9', edgecolor='#cccccc')  # light box around text
+)
+
+plt.tight_layout()
+plt.savefig(f'{OUTPUT_DIR}02_correlation_matrix.png', dpi=300, bbox_inches='tight')
+print("✓ Saved: 02_correlation_matrix.png")
+plt.close()
 
 # ============================================================================
 # PART 3: PREPROCESARE
@@ -160,6 +191,7 @@ print(f"\n[STEP 4] Model Training")
 
 # Model 1: Logistic Regression
 print("\n--- Model 1: Logistic Regression ---")
+# ATENTIE: Potrivit pentru clasificare binară, interpretabil
 model1 = LogisticRegression(max_iter=1000, random_state=RANDOM_STATE)
 model1.fit(X_train_processed, y_train)
 pred1 = model1.predict(X_test_processed)
@@ -169,6 +201,7 @@ print(f"Accuracy: {score1:.4f}")
 
 # Model 2: Random Forest
 print("\n--- Model 2: Random Forest ---")
+# INTUITIE: Ensemble model, handle non-linear relationships bine
 model2 = RandomForestClassifier(n_estimators=100, random_state=RANDOM_STATE, n_jobs=-1)
 model2.fit(X_train_processed, y_train)
 pred2 = model2.predict(X_test_processed)
@@ -216,6 +249,7 @@ best_prob = best_model.predict_proba(X_test_processed)[:, 1] if hasattr(best_mod
 best_score = accuracy_score(y_test, best_pred)
 print(f"Test score: {best_score:.4f}")
 
+
 # ============================================================================
 # PART 6: FINAL EVALUATION
 # ============================================================================
@@ -225,7 +259,7 @@ print(f"\n[STEP 6] Final Evaluation")
 # Calculate the four core classification metrics on the test set
 accuracy = accuracy_score(y_test, best_pred) # overall percentage of correct predictions
 precision = precision_score(y_test, best_pred, average='weighted', zero_division=0) # how many predicted 'Yes' were actually 'Yes'
-recall = recall_score(y_test, best_pred, average='weighted', zero_division=0)# how many actual 'Yes' cases did we catch
+recall = recall_score(y_test, best_pred, average='weighted', zero_division=0) # how many actual 'Yes' cases did we catch
 f1 = f1_score(y_test, best_pred, average='weighted', zero_division=0) # harmonic mean of precision and recall
 
 # Print metrics in a clean formatted table
@@ -247,6 +281,16 @@ sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', ax=ax) # fmt='d' shows intege
 ax.set_title('Confusion Matrix - Best Model', fontsize=14, fontweight='bold')
 ax.set_ylabel('Actual')# rows = ground truth
 ax.set_xlabel('Predicted')# columns = model predictions
+fig.text(
+    0.5, -0.07,
+    "How to read this matrix:\n"
+    "✅ Top-Left (359): Correctly predicted employees who STAYED  "
+    "✅ Bottom-Right (2): Correctly predicted employees who LEFT\n"
+    "❌ Bottom-Left (80): Employees who LEFT but model predicted STAYED (False Negatives — most critical error)\n"
+    "❌ Top-Right (0): Employees who STAYED but model predicted LEFT (False Positives)",
+    ha='center', fontsize=9, color='#444444',
+    bbox=dict(boxstyle='round,pad=0.5', facecolor='#fff3cd', edgecolor='#ffc107')  # yellow warning box
+)
 plt.tight_layout()
 plt.savefig(f'{OUTPUT_DIR}04_confusion_matrix.png', dpi=300, bbox_inches='tight')  # save as high-res image
 print("✓ Saved: 04_confusion_matrix.png")
@@ -313,6 +357,19 @@ ax.set_title('Model Comparison', fontsize=14, fontweight='bold')
 ax.set_ylim([0.7, 1]) # start y-axis at 0.7 — differences are more visible
 for i, v in enumerate(models_comparison['Accuracy']):
     ax.text(i, v + 0.002, f'{v:.3f}', ha='center')# show exact score above each bar
+
+# Add explanation below the chart
+fig.text(
+    0.5, -0.08,
+    "How to read this chart:\n"
+    "Each bar shows the test accuracy of a different model (higher = better).  "
+    "Accuracy = percentage of correct predictions on unseen test data.\n"
+    "⚠️ Note: Accuracy alone can be misleading on imbalanced datasets.  "
+    "🏆 Best model: Random Forest Tuned (0.819) — optimized via GridSearchCV.",
+    ha='center', fontsize=9, color='#444444',
+    bbox=dict(boxstyle='round,pad=0.5', facecolor='#f9f9f9', edgecolor='#cccccc')
+)
+
 plt.tight_layout()
 plt.savefig(f'{OUTPUT_DIR}07_model_comparison.png', dpi=300, bbox_inches='tight')
 print("✓ Saved: 07_model_comparison.png")
